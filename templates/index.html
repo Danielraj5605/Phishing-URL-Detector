@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing URL Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Phishing URL Detector</h1>
+        <p class="subtitle">Check if a URL is safe or malicious</p>
+        
+        <form action="/predict" method="POST" class="input-section">
+            <input type="text" name="url" placeholder="Enter URL (e.g., https://google.com)" value="{{ url if url else '' }}" required>
+            <button type="submit">Check URL</button>
+        </form>
+
+        {% if prediction %}
+        <div class="result-card {{ prediction.result.lower() }}">
+            <div class="result-header">
+                <span class="status-icon">
+                    {% if prediction.result == 'Safe' %} ✅ 
+                    {% elif prediction.result == 'Suspicious' %} ⚠️
+                    {% else %} 🚨
+                    {% endif %}
+                </span>
+                <span class="status-text">{{ prediction.result }}</span>
+            </div>
+            
+            <p class="url-checked"><strong>Checked:</strong> {{ url }}</p>
+            
+            {% if prediction.reasons %}
+            <div class="reasons-box">
+                <p><strong>Analysis:</strong></p>
+                <ul>
+                    {% for reason in prediction.reasons %}
+                    <li>{{ reason }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="info-section">
+            <hr>
+            <h3>🔍 How it works</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <strong>Rule-Based Analysis</strong>
+                    <p>Scans for suspicious patterns like IP addresses or mask symbols (@).</p>
+                </div>
+                <div class="info-item">
+                    <strong>Machine Learning</strong>
+                    <p>Uses a Logistic Regression model to classify URLs based on extracted features.</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with Flask & Scikit-Learn | HR Ready Prototype</p>
+        </footer>
+    </div>
+</body>
+</html>
