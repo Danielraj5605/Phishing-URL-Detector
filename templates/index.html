@@ -5,63 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phishing URL Detector</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>🛡️ Phishing URL Detector</h1>
-        <p class="subtitle">Check if a URL is safe or malicious</p>
-        
-        <form action="/predict" method="POST" class="input-section">
-            <input type="text" name="url" placeholder="Enter URL (e.g., https://google.com)" value="{{ url if url else '' }}" required>
-            <button type="submit">Check URL</button>
-        </form>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
 
-        {% if prediction %}
-        <div class="result-card {{ prediction.result.lower() }}">
-            <div class="result-header">
-                <span class="status-icon">
-                    {% if prediction.result == 'Safe' %} ✅ 
-                    {% elif prediction.result == 'Suspicious' %} ⚠️
-                    {% else %} 🚨
-                    {% endif %}
-                </span>
-                <span class="status-text">{{ prediction.result }}</span>
+    <div class="container">
+        <header>
+            <div class="logo">🛡️</div>
+            <h1>Phishing Detector</h1>
+            <p class="subtitle">Advanced URL Security Analysis</p>
+        </header>
+        
+        <main>
+            <form action="/predict" method="POST" class="input-section">
+                <div class="input-group">
+                    <i class="fa-solid fa-link"></i>
+                    <input type="text" name="url" placeholder="Paste URL here..." value="{{ url if url else '' }}" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span>Analyze URL</span>
+                    <i class="fa-solid fa-bolt"></i>
+                </button>
+            </form>
+
+            <div class="examples">
+                <p>Try an example:</p>
+                <div class="example-chips">
+                    <button type="button" onclick="setURL('https://google.com')" class="chip safe">Google</button>
+                    <button type="button" onclick="setURL('http://192.168.1.1/login@secure')" class="chip danger">Suspicious IP</button>
+                    <button type="button" onclick="setURL('http://paypal-security-update.net/login')" class="chip danger">Phishing</button>
+                </div>
             </div>
-            
-            <p class="url-checked"><strong>Checked:</strong> {{ url }}</p>
-            
-            {% if prediction.reasons %}
-            <div class="reasons-box">
-                <p><strong>Analysis:</strong></p>
-                <ul>
-                    {% for reason in prediction.reasons %}
-                    <li>{{ reason }}</li>
-                    {% endfor %}
-                </ul>
+
+            {% if prediction %}
+            <div class="result-card {{ prediction.result.lower() }}">
+                <div class="result-badge">
+                    {% if prediction.result == 'Safe' %} 
+                        <i class="fa-solid fa-circle-check"></i>
+                    {% elif prediction.result == 'Suspicious' %} 
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    {% else %} 
+                        <i class="fa-solid fa-skull-crossbones"></i>
+                    {% endif %}
+                    {{ prediction.result }}
+                </div>
+                
+                <div class="url-display">
+                    <label>Analyzed URL</label>
+                    <div class="url-text">{{ url }}</div>
+                </div>
+
+                <div class="analysis-report">
+                    <h3>Analysis Report</h3>
+                    {% if prediction.reasons %}
+                    <ul class="reasons-list">
+                        {% for reason in prediction.reasons %}
+                        <li><i class="fa-solid fa-circle-info"></i> {{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="no-issues"><i class="fa-solid fa-shield-halved"></i> No major security issues detected for this URL.</p>
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
-        </div>
-        {% endif %}
+        </main>
 
-        <div class="info-section">
-            <hr>
-            <h3>🔍 How it works</h3>
-            <div class="info-grid">
-                <div class="info-item">
-                    <strong>Rule-Based Analysis</strong>
-                    <p>Scans for suspicious patterns like IP addresses or mask symbols (@).</p>
+        <section class="how-it-works">
+            <h3>How Analysis Works</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <h4>ML Engine</h4>
+                    <p>Logistic Regression model trained on thousands of known malicious patterns.</p>
                 </div>
-                <div class="info-item">
-                    <strong>Machine Learning</strong>
-                    <p>Uses a Logistic Regression model to classify URLs based on extracted features.</p>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                    <h4>Heuristic Scanning</h4>
+                    <p>Checks for deceptive patterns, IP masking, and SSL certificates.</p>
                 </div>
             </div>
-        </div>
+        </section>
 
         <footer>
-            <p>Built with Flask & Scikit-Learn | HR Ready Prototype</p>
+            <p>SecureURL Prototype &copy; 2026</p>
+            <div class="footer-links">
+                <span>Privacy</span> &bull; <span>Documentation</span>
+            </div>
         </footer>
     </div>
+
+    <script>
+        function setURL(url) {
+            document.querySelector('input[name="url"]').value = url;
+        }
+    </script>
 </body>
 </html>
