@@ -17,12 +17,18 @@ def extract_features(url):
     features['has_at'] = 1 if '@' in url else 0
     
     # Feature 4: Presence of IP address
-    # Simple regex for IPv4
     ip_pattern = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
     features['has_ip'] = 1 if re.search(ip_pattern, url) else 0
     
     # Feature 5: HTTPS or not
     features['https'] = 1 if url.startswith('https') else 0
+
+    # Feature 6: Count of "-" (Often used in phishing)
+    features['dash_count'] = url.count('-')
+
+    # Feature 7: Presence of "login", "secure", "verify"
+    keywords = ['login', 'secure', 'verify', 'update', 'account', 'banking', 'service']
+    features['keyword_count'] = sum(1 for kw in keywords if kw in url.lower())
     
     return features
 

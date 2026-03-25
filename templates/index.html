@@ -3,106 +3,257 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phishing URL Detector</title>
+    <title>Danielraj | Phishing Detector</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
+<body class="light-mode">
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#home" class="nav-brand">
+                🛡️ Phishing Detector
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="#home">Home</a>
+                <a href="#about">About</a>
+                <a href="#features">Features</a>
+                <a href="#how">Process</a>
+                <a href="#contact">Contact</a>
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <i class="fa-solid fa-moon"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="background-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
     </div>
 
-    <div class="container">
-        <header>
-            <div class="logo">🛡️</div>
-            <h1>Phishing Detector</h1>
-            <p class="subtitle">Advanced URL Security Analysis</p>
-        </header>
-        
-        <main>
-            <form action="/predict" method="POST" class="input-section">
-                <div class="input-group">
-                    <i class="fa-solid fa-link"></i>
-                    <input type="text" name="url" placeholder="Paste URL here..." value="{{ url if url else '' }}" required>
-                </div>
-                <button type="submit" class="btn-primary">
-                    <span>Analyze URL</span>
-                    <i class="fa-solid fa-bolt"></i>
-                </button>
-            </form>
+    <div class="app-container">
+        <!-- HOME SECTION -->
+        <section id="home" class="section">
+            <header class="hero-header">
+                <h1>Analyze <span>URLs</span> in Seconds</h1>
+                <p>Verify link safety with Machine Learning & Heuristic analysis.</p>
+            </header>
+            
+            <div class="section-card">
+                <form id="analyze-form" action="/predict#home" method="POST" class="scan-form">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-link input-icon"></i>
+                        <input type="text" name="url" id="url-input" 
+                               placeholder="https://example.com/login" 
+                               value="{{ url if url else '' }}" 
+                               required>
+                    </div>
+                    <button type="submit" class="btn-analyze" id="submit-btn">
+                        <span class="btn-text">Analyze URL</span>
+                        <i class="fa-solid fa-bolt-lightning"></i>
+                        <div class="spinner hidden"></div>
+                    </button>
+                </form>
 
-            <div class="examples">
-                <p>Try an example:</p>
-                <div class="example-chips">
-                    <button type="button" onclick="setURL('https://google.com')" class="chip safe">Google</button>
-                    <button type="button" onclick="setURL('http://192.168.1.1/login@secure')" class="chip danger">Suspicious IP</button>
-                    <button type="button" onclick="setURL('http://paypal-security-update.net/login')" class="chip danger">Phishing</button>
+                <div class="chip-group" style="margin-top: 2rem;">
+                    <p style="font-size: 0.8rem; font-weight: 800; color: var(--text-muted); width: 100%; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem;">Quick Test Samples:</p>
+                    <button type="button" onclick="setURL('https://google.com')" class="chip chip-safe">
+                        <i class="fa-solid fa-check-circle"></i> Google
+                    </button>
+                    <button type="button" onclick="setURL('http://192.168.1.1/secure-login')" class="chip chip-danger">
+                        <i class="fa-solid fa-mask"></i> Suspicious IP
+                    </button>
+                    <button type="button" onclick="setURL('http://paypal-security-update.net/login')" class="chip chip-danger">
+                        <i class="fa-solid fa-unlocked-keyhole"></i> Phishing Link
+                    </button>
                 </div>
             </div>
 
             {% if prediction %}
-            <div class="result-card {{ prediction.result.lower() }}">
-                <div class="result-badge">
-                    {% if prediction.result == 'Safe' %} 
-                        <i class="fa-solid fa-circle-check"></i>
-                    {% elif prediction.result == 'Suspicious' %} 
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    {% else %} 
-                        <i class="fa-solid fa-skull-crossbones"></i>
-                    {% endif %}
-                    {{ prediction.result }}
-                </div>
-                
-                <div class="url-display">
-                    <label>Analyzed URL</label>
-                    <div class="url-text">{{ url }}</div>
+            <div class="section-card result-card animate-slide-up {{ prediction.result.lower() }}" style="margin-top: 2rem;">
+                <div class="result-status-banner">
+                    <div class="status-icon-box">
+                        {% if prediction.result == 'Safe' %} <i class="fa-solid fa-check-double"></i>
+                        {% elif prediction.result == 'Suspicious' %} <i class="fa-solid fa-triangle-exclamation"></i>
+                        {% else %} <i class="fa-solid fa-skull-crossbones"></i>
+                        {% endif %}
+                    </div>
+                    <div class="status-info">
+                        <span class="status-label">Classification</span>
+                        <h3 class="status-value">{{ prediction.result }}</h3>
+                    </div>
+                    <div class="risk-score-box">
+                        <span class="score-label">Risk Level</span>
+                        <span class="score-value">{{ prediction.risk_score }}%</span>
+                    </div>
                 </div>
 
-                <div class="analysis-report">
-                    <h3>Analysis Report</h3>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ prediction.risk_score }}%"></div>
+                </div>
+
+                <div class="report-section">
+                    <h4 style="margin-bottom: 1.5rem; font-weight: 800;">Analysis Report</h4>
                     {% if prediction.reasons %}
-                    <ul class="reasons-list">
+                    <ul class="reason-list" style="list-style: none;">
                         {% for reason in prediction.reasons %}
-                        <li><i class="fa-solid fa-circle-info"></i> {{ reason }}</li>
+                        <li class="reason-item" style="display: flex; gap: 1rem; background: var(--bg-app); padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem;">
+                            <i class="fa-solid fa-circle-check" style="color: var(--primary);"></i>
+                            <span>{{ reason }}</span>
+                        </li>
                         {% endfor %}
                     </ul>
                     {% else %}
-                    <p class="no-issues"><i class="fa-solid fa-shield-halved"></i> No major security issues detected for this URL.</p>
+                    <div class="empty-report" style="text-align: center; padding: 2rem; background: var(--bg-app); border-radius: 20px;">
+                        <i class="fa-solid fa-shield-heart" style="font-size: 2rem; color: var(--safe); margin-bottom: 1rem; display: block;"></i>
+                        <p>No malicious indicators found. Link verified as safe.</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
             {% endif %}
-        </main>
+        </section>
 
-        <section class="how-it-works">
-            <h3>How Analysis Works</h3>
+        <!-- ABOUT SECTION -->
+        <section id="about" class="section-card">
+            <div class="card-header">
+                <i class="fa-solid fa-user-shield"></i>
+                <h2>About the Project</h2>
+            </div>
+            <div class="section-content">
+                <p>This is a <strong>personal project</strong> developed by <strong>Danielraj</strong> to bridge the gap between complex cybersecurity threats and user-friendly protection tools.</p>
+                <p style="margin-top: 1rem;">Phishing remains one of the most common cyber-attacks. This tool provides an accessible way for anyone to verify link safety using modern computational techniques.</p>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION -->
+        <section id="features" class="section-card">
+            <div class="card-header">
+                <i class="fa-solid fa-star"></i>
+                <h2>Core Features</h2>
+            </div>
             <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-microchip"></i></div>
-                    <h4>ML Engine</h4>
-                    <p>Logistic Regression model trained on thousands of known malicious patterns.</p>
+                <div class="feature-item">
+                    <i class="fa-solid fa-bolt" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <h4>Real-time Scanning</h4>
+                    <p>Instant analysis of URL structures and metadata.</p>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
-                    <h4>Heuristic Scanning</h4>
-                    <p>Checks for deceptive patterns, IP masking, and SSL certificates.</p>
+                <div class="feature-item">
+                    <i class="fa-solid fa-brain" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <h4>ML Detection</h4>
+                    <p>Pattern recognition via trained Logistic Regression models.</p>
+                </div>
+                <div class="feature-item">
+                    <i class="fa-solid fa-magnifying-glass-chart" style="font-size: 1.5rem; color: var(--primary);"></i>
+                    <h4>Heuristic Analysis</h4>
+                    <p>Scans for IP masking, deceptive keywords, and SSL status.</p>
                 </div>
             </div>
         </section>
 
-        <footer>
-            <p>SecureURL Prototype &copy; 2026</p>
-            <div class="footer-links">
-                <span>Privacy</span> &bull; <span>Documentation</span>
+        <!-- HOW IT WORKS SECTION -->
+        <section id="how" class="section-card">
+            <div class="card-header">
+                <i class="fa-solid fa-gears"></i>
+                <h2>How It Works</h2>
             </div>
+            <div class="how-it-works-steps">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h4>Enter URL</h4>
+                    <p>Input the link you wish to analyze.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h4>Analyze</h4>
+                    <p>Hybrid engine scans for 10+ risk factors.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h4>Verdict</h4>
+                    <p>Visual risk score and detailed report.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT SECTION -->
+        <section id="contact" class="section-card">
+            <div class="card-header">
+                <i class="fa-solid fa-address-card"></i>
+                <h2>Contact</h2>
+            </div>
+            <div class="contact-card-content">
+                <div class="contact-details">
+                    <h3 style="font-size: 1.5rem; font-weight: 800;">Danielraj</h3>
+                    <p style="color: var(--primary); font-weight: 700;">Software Developer</p>
+                </div>
+                <div class="contact-actions">
+                    <a href="https://danielraj.dev/" target="_blank" class="btn-contact">
+                        <i class="fa-solid fa-globe"></i> Portfolio
+                    </a>
+                    <a href="https://linkedin.com/in/danielraj-s-a84bbb310" target="_blank" class="btn-contact">
+                        <i class="fa-brands fa-linkedin"></i> LinkedIn
+                    </a>
+                    <a href="https://github.com/Danielraj5605" target="_blank" class="btn-contact">
+                        <i class="fa-brands fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <footer class="app-footer">
+            <p>Developed with Machine Learning & Heuristics by <a href="https://danielraj.dev/" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 700;">Danielraj</a></p>
         </footer>
     </div>
 
     <script>
         function setURL(url) {
-            document.querySelector('input[name="url"]').value = url;
+            document.getElementById('url-input').value = url;
+            document.getElementById('analyze-form').submit();
+        }
+
+        const form = document.getElementById('analyze-form');
+        const btn = document.getElementById('submit-btn');
+        const btnText = btn.querySelector('.btn-text');
+        const spinner = btn.querySelector('.spinner');
+
+        form.onsubmit = function() {
+            btnText.textContent = "Analyzing...";
+            btn.classList.add('loading');
+            spinner.classList.remove('hidden');
+            btn.disabled = true;
+        };
+
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.querySelector('.theme-toggle i');
+            if (body.classList.contains('light-mode')) {
+                body.classList.replace('light-mode', 'dark-mode');
+                icon.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark-mode');
+            } else {
+                body.classList.replace('dark-mode', 'light-mode');
+                icon.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light-mode');
+            }
+        }
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                window.scrollTo({
+                    top: target.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        if (localStorage.getItem('theme') === 'dark-mode') {
+            document.body.className = 'dark-mode';
+            document.querySelector('.theme-toggle i').className = 'fa-solid fa-sun';
         }
     </script>
 </body>
